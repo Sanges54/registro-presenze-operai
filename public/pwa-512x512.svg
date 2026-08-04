@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Registro Presenze">
+  <rect width="512" height="512" rx="112" fill="#2563eb"/>
+  <path fill="#fff" d="M160 128h192a32 32 0 0 1 32 32v208a32 32 0 0 1-32 32H160a32 32 0 0 1-32-32V160a32 32 0 0 1 32-32Zm27 85h144v-32H187v32Zm0 69h144v-32H187v32Zm0 69h85v-32h-85v32Z"/>
+</svg>
