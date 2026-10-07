@@ -1,5 +1,5 @@
 import { Eye, EyeOff, KeyRound, LogIn } from "lucide-react";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { PageHeader } from "@/components/PageHeader";
@@ -24,6 +24,7 @@ export function LoginPage() {
   const locationState = location.state as LocationState | null;
   const redirectTo = locationState?.from?.pathname || "/";
   const [email, setEmail] = useState("");
+  const emailInputRef = useRef<HTMLInputElement>(null);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -58,7 +59,7 @@ export function LoginPage() {
   }
 
   async function handlePasswordReset() {
-    const cleanEmail = email.trim();
+    const cleanEmail = (emailInputRef.current?.value || email).trim();
 
     setErrorMessage("");
     setInfoMessage("");
@@ -118,8 +119,10 @@ export function LoginPage() {
               <span className="text-sm font-medium text-app-text">Email</span>
               <input
                 autoComplete="email"
+                ref={emailInputRef}
                 className="min-h-12 rounded-lg border border-app-border bg-white px-3 text-base text-app-text outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
                 onChange={(event) => setEmail(event.target.value)}
+                onInput={(event) => setEmail(event.currentTarget.value)}
                 required
                 type="email"
                 value={email}
