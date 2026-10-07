@@ -1,4 +1,4 @@
-import { Eye, EyeOff, LogIn } from "lucide-react";
+import { Eye, EyeOff, KeyRound, LogIn } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { LoadingScreen } from "@/components/LoadingScreen";
@@ -12,7 +12,13 @@ type LocationState = {
 };
 
 export function LoginPage() {
-  const { isAuthenticated, isLoading, signIn } = useAuth();
+  const {
+    isAuthenticated,
+    isLoading,
+    isPasswordRecovery,
+    signIn,
+    requestPasswordReset
+  } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const locationState = location.state as LocationState | null;
@@ -21,17 +27,20 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [infoMessage, setInfoMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !isPasswordRecovery) {
       navigate(redirectTo, { replace: true });
     }
-  }, [isAuthenticated, navigate, redirectTo]);
+  }, [isAuthenticated, isPasswordRecovery, navigate, redirectTo]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setErrorMessage("");
+    setInfoMessage("");
     setIsSubmitting(true);
 
     try {
@@ -48,11 +57,40 @@ export function LoginPage() {
     }
   }
 
+  async function handlePasswordReset() {
+    const cleanEmail = email.trim();
+
+    setErrorMessage("");
+    setInfoMessage("");
+
+    if (!cleanEmail) {
+      setErrorMessage("Inserisci prima l'indirizzo email.");
+      return;
+    }
+
+    setIsResetting(true);
+
+    try {
+      await requestPasswordReset(cleanEmail);
+      setInfoMessage(
+        "Email inviata. Apri il link ricevuto per scegliere una nuova password."
+      );
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Invio dell'email non riuscito. Riprova."
+      );
+    } finally {
+      setIsResetting(false);
+    }
+  }
+
   if (isLoading) {
     return <LoadingScreen />;
   }
 
-  if (isAuthenticated) {
+  if (isAuthenticated && !isPasswordRecovery) {
     return <Navigate replace to={redirectTo} />;
   }
 
@@ -118,6 +156,22 @@ export function LoginPage() {
               </span>
             </label>
           </div>
+
+          <button
+            className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-lg px-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isResetting}
+            onClick={handlePasswordReset}
+            type="button"
+          >
+            <KeyRound aria-hidden="true" className="size-4" />
+            {isResetting ? "Invio in corso..." : "Password dimenticata?"}
+          </button>
+
+          {infoMessage ? (
+            <p className="mt-4 rounded-lg border border-green-200 bg-green-50 p-3 text-sm leading-6 text-green-700">
+              {infoMessage}
+            </p>
+          ) : null}
 
           {errorMessage ? (
             <p className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm leading-6 text-red-700">
