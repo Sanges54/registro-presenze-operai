@@ -1,4 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+import { LoadingScreen } from "@/components/LoadingScreen";
+import { useAuth } from "@/features/auth/auth-context";
 import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
 import { AppLayout } from "@/layouts/AppLayout";
 import { BackupPage } from "@/pages/BackupPage";
@@ -9,11 +11,25 @@ import { NotFoundPage } from "@/pages/NotFoundPage";
 import { OperaiPage } from "@/pages/OperaiPage";
 import { PresenzePage } from "@/pages/PresenzePage";
 import { RendicontoPage } from "@/pages/RendicontoPage";
+import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
 
 export function AppRoutes() {
+  const { isLoading, isPasswordRecovery } = useAuth();
+  const recoveryFromUrl =
+    new URLSearchParams(window.location.search).get("recovery") === "1";
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  if (isPasswordRecovery || recoveryFromUrl) {
+    return <ResetPasswordPage />;
+  }
+
   return (
     <Routes>
       <Route path="login" element={<LoginPage />} />
+      <Route path="reset-password" element={<ResetPasswordPage />} />
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
           <Route index element={<DashboardPage />} />
