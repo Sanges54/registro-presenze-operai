@@ -6,8 +6,11 @@ export type AuthContextValue = {
   session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isPasswordRecovery: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  requestPasswordReset: (email: string) => Promise<void>;
+  updatePassword: (password: string) => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextValue | undefined>(
