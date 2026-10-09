@@ -148,6 +148,58 @@ export async function generateMonthlyPdf({
     }
   });
 
+  // Read-only PDF section: attendance records and their stored notes are never changed.
+  const noteRows = summaries.flatMap((summary) =>
+    days.flatMap((day) => {
+      const note = summary.attendanceByDate.get(day.date)?.notes?.trim();
+      return note
+        ? [[getWorkerFullName(summary.worker), day.date.split("-").reverse().join("/"), note]]
+        : [];
+    })
+  );
+
+  if (noteRows.length > 0) {
+    const legendBottom = doc.lastAutoTable?.finalY ?? afterTableY;
+    let notesStartY = legendBottom + 8;
+
+    if (notesStartY > doc.internal.pageSize.getHeight() - 40) {
+      doc.addPage();
+      notesStartY = 14;
+    }
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("Note sulle presenze", marginX, notesStartY);
+
+    autoTable(doc, {
+      startY: notesStartY + 4,
+      head: [["Operaio", "Data", "Nota"]],
+      body: noteRows,
+      theme: "grid",
+      margin: { left: marginX, right: marginX, bottom: 27 },
+      styles: {
+        cellPadding: 2,
+        fontSize: 8,
+        lineColor: [226, 232, 240],
+        lineWidth: 0.1,
+        overflow: "linebreak",
+        valign: "top"
+      },
+      headStyles: {
+        fillColor: [15, 23, 42],
+        textColor: 255,
+        fontStyle: "bold"
+      },
+      columnStyles: {
+        0: { cellWidth: 50 },
+        1: { cellWidth: 28 },
+        2: { cellWidth: "auto" }
+      },
+      rowPageBreak: "avoid",
+      showHead: "everyPage"
+    });
+  }
+
   addFooterAndSignature(doc, settings);
 
   doc.save(`rendiconto-presenze-${year}-${String(month).padStart(2, "0")}.pdf`);
