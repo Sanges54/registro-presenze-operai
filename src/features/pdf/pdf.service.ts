@@ -21,6 +21,7 @@ type GenerateMonthlyPdfOptions = {
   totals: MonthlyTotals;
   month: number;
   year: number;
+  includeNotes?: boolean;
 };
 
 type JsPdfWithAutoTable = jsPDF & {
@@ -37,7 +38,8 @@ export async function generateMonthlyPdf({
   summaries,
   totals,
   month,
-  year
+  year,
+  includeNotes = true
 }: GenerateMonthlyPdfOptions) {
   const doc = new jsPDF({
     format: "a4",
@@ -158,7 +160,7 @@ export async function generateMonthlyPdf({
     })
   );
 
-  if (noteRows.length > 0) {
+  if (includeNotes && noteRows.length > 0) {
     const legendBottom = doc.lastAutoTable?.finalY ?? afterTableY;
     let notesStartY = legendBottom + 8;
 
@@ -202,7 +204,8 @@ export async function generateMonthlyPdf({
 
   addFooterAndSignature(doc, settings);
 
-  doc.save(`rendiconto-presenze-${year}-${String(month).padStart(2, "0")}.pdf`);
+  const filenameSuffix = includeNotes ? "-con-note" : "";
+  doc.save(`rendiconto-presenze-${year}-${String(month).padStart(2, "0")}${filenameSuffix}.pdf`);
 }
 
 function buildPdfHeader(days: MonthDay[]) {

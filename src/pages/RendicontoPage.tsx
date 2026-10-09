@@ -83,7 +83,7 @@ export function RendicontoPage() {
     };
   }, [selectedMonth, selectedYear]);
 
-  async function handleGeneratePdf() {
+  async function handleGeneratePdf(includeNotes: boolean) {
     if (summaries.length === 0) {
       setErrorMessage("Non ci sono dati da esportare nel mese selezionato.");
       return;
@@ -101,9 +101,10 @@ export function RendicontoPage() {
         summaries,
         totals,
         month: selectedMonth,
-        year: selectedYear
+        year: selectedYear,
+        includeNotes
       });
-      setMessage("PDF generato correttamente.");
+      setMessage(includeNotes ? "PDF con note generato correttamente." : "PDF generato correttamente.");
     } catch (error) {
       setErrorMessage(getErrorMessage(error));
     } finally {
@@ -114,15 +115,26 @@ export function RendicontoPage() {
   return (
     <section className="flex flex-col gap-5">
       <PageHeader eyebrow="Mensile" title="Rendiconto">
-        <button
-          className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus:ring-4 focus:ring-blue-200 sm:w-auto"
-          disabled={isLoading || isGeneratingPdf || summaries.length === 0}
-          onClick={handleGeneratePdf}
-          type="button"
-        >
-          <Download aria-hidden="true" className="size-5" />
-          {isGeneratingPdf ? "Generazione" : "Genera PDF"}
-        </button>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+          <button
+            className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus:ring-4 focus:ring-blue-200 sm:w-auto"
+            disabled={isLoading || isGeneratingPdf || summaries.length === 0}
+            onClick={() => void handleGeneratePdf(false)}
+            type="button"
+          >
+            <Download aria-hidden="true" className="size-5" />
+            {isGeneratingPdf ? "Generazione..." : "Genera PDF"}
+          </button>
+          <button
+            className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg border border-blue-600 bg-white px-4 text-sm font-semibold text-blue-700 transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus:ring-4 focus:ring-blue-200 sm:w-auto"
+            disabled={isLoading || isGeneratingPdf || summaries.length === 0}
+            onClick={() => void handleGeneratePdf(true)}
+            type="button"
+          >
+            <Download aria-hidden="true" className="size-5" />
+            {isGeneratingPdf ? "Generazione..." : "Genera PDF con note"}
+          </button>
+        </div>
       </PageHeader>
 
       <div className="grid gap-3 sm:grid-cols-2">
